@@ -1,5 +1,6 @@
 import sequelize from '../config/database.js';
 import Users from './Users.js';
+import Category from './Category.js';
 
 //conectar ao banco de dados
 const connectToDatabase = async () => {
@@ -16,4 +17,4 @@ const connectToDatabase = async () => {
 
 }
 
-export {connectToDatabase, Users};
+export {connectToDatabase, Users, Category};
