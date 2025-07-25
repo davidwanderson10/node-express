@@ -1,6 +1,7 @@
 import sequelize from '../config/database.js';
 import Users from './Users.js';
 import Category from './Category.js';
+import Books from './Books.js';
 
 //conectar ao banco de dados
 const connectToDatabase = async () => {
@@ -14,7 +15,6 @@ const connectToDatabase = async () => {
     } catch (error) {
         console.error('🔴 Erro ao conectar ao banco:', error);
     }
-
 }
 
-export {connectToDatabase, Users, Category};
+export {connectToDatabase, Users, Category, Books}; // Exportando a função de conexão e os modelos
