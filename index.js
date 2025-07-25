@@ -1,10 +1,13 @@
 import express from 'express';
+import cors from 'cors';
 import { connectToDatabase } from './models/index.js'; // Importando a função de conexão e o modelo Users
 import usersRoutes from './routes/usersRoutes.js'; // Importando as rotas de usuários
 import categoriesRoutes from './routes/CategoriesRoutes.js'; // Importando as rotas de categorias
+
 const app = express();
 const port = 3000;
 
+app.use(cors());
 app.use(express.json()); // Middleware para aceitar JSON no corpo das requisições
 
 await connectToDatabase(); // Conectando ao banco de dados
