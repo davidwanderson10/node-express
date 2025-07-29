@@ -1,4 +1,5 @@
 import Users from '../models/Users.js';
+import bcrypt from 'bcrypt';
 
 const getAllUsers = async (req, res) => {
     try {
@@ -27,14 +28,20 @@ const getUser = async (req, res) => {
 const createUsers = async (req, res) => {
     try {
         
-        if(!req.body.name || !req.body.email || !req.body.role || req.body.name.length < 5 ) {
+        if(!req.body.name || !req.body.email || !req.body.role || req.body.name.length < 5 || !req.body.password) {
             return res.status(400).send({message: 'Dados incompletos para criar usuário'}); // Retornando 400 se os dados estiverem incompletos
         }
-        
-        const usuario = await Users.create({name: req.body.name,
+
+        // Criptografando a senha antes de salvar no banco de dados
+        const saltRounds = await bcrypt.genSalt(12);
+        const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+
+        const usuario = await Users.create({
+            name: req.body.name,
             email: req.body.email,
             role: req.body.role,
-            password: req.body.password }); // Criando um novo usuário com os dados do corpo da requisição
+            password: hashedPassword }); // Criando um novo usuário com os dados do corpo da requisição
+
         res.status(200).json(usuario); // Enviando status 200 e os dados do usuário criado como resposta
 
     } catch (error) {
@@ -48,7 +55,7 @@ const updateUsers = async (req, res) => {
 
         const { name, email, role, password } = req.body; // Desestruturando os dados do corpo da requisição
         
-        if(!name || !email || !role || name.length < 5 ) {
+        if(!name || !email || !role || name.length < 5 || !password) {
             return res.status(400).send({message: 'Dados incompletos para alterar usuário'}); // Retornando 400 se os dados estiverem incompletos
         }
 
@@ -57,10 +64,16 @@ const updateUsers = async (req, res) => {
         if (!usuario) {
             return res.status(404).send({message: 'Usuário não encontrado'}); // Retornando 404 se o usuário não existir
         }
-        await usuario.update({name: name,
+
+        // Criptografando a senha antes de salvar no banco de dados
+        const saltRounds = await bcrypt.genSalt(12);
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        await usuario.update({
+            name: name,
             email: email,
             role: role,
-            password: password }); // Atualizando os dados do usuário
+            password: hashedPassword }); // Atualizando os dados do usuário
         res.status(200).json(usuario); // Enviando status 200 e os dados atualizados do usuário
         
     } catch (error) {

@@ -1,97 +1,107 @@
-import Users from '../models/Users.js';
+import Books from '../models/Books.js';
 
-const getAllUsers = async (req, res) => {
+const getAllBooks = async (req, res) => {
     try {
-        const usersAll = await Users.findAll({ attributes: ['name', 'email', 'role'] }) // Buscando todos os usuários
-        res.status(200).json(usersAll); // Enviando status 200 e a lista de usuários como resposta
+        const booksAll = await Books.findAll() // Buscando todos os livros
+        res.status(200).json(booksAll); // Enviando status 200 e a lista de livros como resposta
     } catch (error) {
-        console.error('Erro ao buscar usuários:', error);
-        res.status(500).send('Erro ao buscar usuários');
+        console.error('Erro ao buscar livros:', error);
+        res.status(500).send('Erro ao buscar livros');
     }
 }
 
-const getUser = async (req, res) => {
+const getBook = async (req, res) => {
     try {
-        const id = req.params.id; // Obtendo o ID do usuário a ser buscado
-        const user = await Users.findOne({ attributes: ['name', 'email', 'role'], where: {id: id}}) // Buscando usuário pelo ID
-        // const user = await Users.findByPk(id, { attributes: ['name', 'email', 'role']}) // Buscando usuário pelo ID
-        // const user = await Users.findAll({ attributes: ['name', 'email', 'role'], where: {id: id}}) // Buscando usuário pelo ID
+        const id = req.params.id; // Obtendo o ID do livro a ser buscado
+        const livro = await Books.findOne({ where: {id: id}}) // Buscando livros pelo ID
         
-        res.status(200).json(user); // Enviando status 200 e os dados do usuário como resposta
+        res.status(200).json(livro); // Enviando status 200 e os dados do livro como resposta
     } catch (error) {
-        console.error('Erro ao buscar usuários:', error);
-        res.status(500).send('Erro ao buscar usuários');
+        console.error('Erro ao buscar livro:', error);
+        res.status(500).send('Erro ao buscar livro');
     }
 }
 
-const createUsers = async (req, res) => {
+const createBooks = async (req, res) => {
     try {
+
+        const { category_id, title, author, description, published_date, available } = req.body; // Desestruturando os dados do corpo da requisição
         
-        if(!req.body.name || !req.body.email || !req.body.role || req.body.name.length < 5 ) {
-            return res.status(400).send({message: 'Dados incompletos para criar usuário'}); // Retornando 400 se os dados estiverem incompletos
+        // middleware para verificar se os dados necessários estão presentes
+        if(!category_id || !title || !author || !description || !published_date) {
+            return res.status(400).send({message: 'Dados incompletos para criar um novo livro'}); // Retornando 400 se os dados estiverem incompletos
         }
         
-        const usuario = await Users.create({name: req.body.name,
-            email: req.body.email,
-            role: req.body.role,
-            password: req.body.password }); // Criando um novo usuário com os dados do corpo da requisição
-        res.status(200).json(usuario); // Enviando status 200 e os dados do usuário criado como resposta
+        const livro = await Books.create({
+            category_id,
+            title,
+            author,
+            description,
+            published_date,
+            available: available || true // Definindo 'available' como true por padrão se não
+        }); // Criando um novo livro com os dados do corpo da requisição
+        res.status(200).json(livro); // Enviando status 200 e os dados do livro criado como resposta
 
     } catch (error) {
-        console.error('Erro ao cadastrar usuário:', error);
-        res.status(500).send('Erro ao cadastrar usuários');
+        console.error('Erro ao cadastrar livro:', error);
+        res.status(500).send('Erro ao cadastrar livro');
     }
 }
 
-const updateUsers = async (req, res) => {
+const updateBooks = async (req, res) => {
     try {
 
-        const { name, email, role, password } = req.body; // Desestruturando os dados do corpo da requisição
+        const { category_id, title, author, description, published_date, available } = req.body; // Desestruturando os dados do corpo da requisição
         
-        if(!name || !email || !role || name.length < 5 ) {
-            return res.status(400).send({message: 'Dados incompletos para alterar usuário'}); // Retornando 400 se os dados estiverem incompletos
+        // middleware para verificar se os dados necessários estão presentes
+        if(!category_id || !title || !author || !description || !published_date) {
+            return res.status(400).send({message: 'Dados incompletos para criar um novo livro'}); // Retornando 400 se os dados estiverem incompletos
         }
 
-        const id = req.params.id; // Obtendo o ID do usuário a ser atualizado
-        const usuario = await Users.findByPk(id); // Buscando o usuário pelo ID
-        if (!usuario) {
-            return res.status(404).send({message: 'Usuário não encontrado'}); // Retornando 404 se o usuário não existir
+        const id = req.params.id; // Obtendo o ID do livro a ser atualizado
+        const livro = await Books.findByPk(id); // Buscando o livro pelo ID
+        if (!livro) {
+            return res.status(404).send({message: 'Livro não encontrado'}); // Retornando 404 se o livro não existir
         }
-        await usuario.update({name: name,
-            email: email,
-            role: role,
-            password: password }); // Atualizando os dados do usuário
-        res.status(200).json(usuario); // Enviando status 200 e os dados atualizados do usuário
+        await livro.update({
+            category_id,
+            title,
+            author,
+            description,
+            published_date,
+            available: available || true }); // Atualizando os dados do livro
+
+        res.status(200).json(livro); // Enviando status 200 e os dados atualizados do livro
         
     } catch (error) {
-        console.error('Erro ao alterar usuário:', error);
-        res.status(500).send({message: 'Erro ao alterar usuários'});
+        console.error('Erro ao alterar livro:', error);
+        res.status(500).send({message: 'Erro ao alterar livro'});
     }
 }
 
-const deleteUsers = async (req, res) => {
+const deleteBooks = async (req, res) => {
     try {
 
-        const id = req.params.id; // Obtendo o ID do usuário a ser atualizado
-        const usuario = await Users.findByPk(id); // Buscando o usuário pelo ID
-        if (!usuario) {
-            return res.status(404).send({message: 'Usuário não encontrado'}); // Retornando 404 se o usuário não existir
+        const id = req.params.id; // Obtendo o ID do livro a ser atualizado
+        const livro = await Books.findByPk(id); // Buscando o livro pelo ID
+        if (!livro) {
+            return res.status(404).send({message: 'Livro não encontrado'}); // Retornando 404 se o livro não existir
         }
 
-        await usuario.destroy(); // Deletando o usuário
-        // await Users.destroy({where: {id: id}}); // Deletando o usuário
-        res.status(200).json({message: 'Usuário deletado com sucesso!'}); // Enviando status 200 e os dados atualizados do usuário
+        await livro.destroy(); // Deletando o livro
+        // await Users.destroy({where: {id: id}}); // Deletando o livro
+        res.status(200).json({message: 'Livro deletado com sucesso!'}); // Enviando status 200
         
     } catch (error) {
-        console.error('Erro ao deletar usuário:', error);
-        res.status(500).send({message: 'Erro ao deletar usuários'});
+        console.error('Erro ao deletar livro:', error);
+        res.status(500).send({message: 'Erro ao deletar livro'});
     }
 }
 
 export default {
-    getAllUsers,
-    getUser,
-    createUsers,
-    updateUsers,
-    deleteUsers
+    getAllBooks,
+    getBook,
+    createBooks,
+    updateBooks,
+    deleteBooks
 }
