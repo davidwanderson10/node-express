@@ -1,6 +1,34 @@
 import Users from '../models/Users.js';
 import bcrypt from 'bcrypt';
 
+const login = async (req, res) => {
+    try {
+
+        const { email, password } = req.body; // Desestruturando os dados do corpo da requisição
+        // middleware para verificar se os dados necessários estão presentes
+        if (!email || !password) {
+            return res.status(400).send({ message: 'Email e senha são obrigatórios' }); // Retornando 400 se os dados estiverem incompletos
+        }
+        // Verificando se o usuário existe
+        const user = await Users.findOne({ where: { email: email } }); // Buscando usuário pelo email
+        // Case o usuário não exista, retornar 404
+        if (!user) {
+            return res.status(404).send({ message: 'Email ou senha inválidos' }); // Retornando 404 se o usuário não existir
+        }
+        // Verificando se a senha está correta (comparando a senha informada com a senha criptografada no banco de dados)
+        const passwordValid = await bcrypt.compare(password, user.password); // Verificando se a senha está correta
+        // Case a senha esteja incorreta, retornar 401
+        if (!passwordValid) {
+            return res.status(401).send({ message: 'Email ou senha inválidos' }); // Retornando 401 se a senha estiver incorreta
+        } 
+        // Se tudo estiver correto, retornar 200 com os dados do usuário
+        res.status(200).json({message: 'Login efetuado com sucesso!'}); // Enviando status 200 e os dados do usuário como resposta
+    } catch (error) {
+        console.error({message: 'Erro ao efetuar o login!'}, error);
+        res.status(500).send({message: 'Erro ao efetuar o login!'});
+    }
+}
+
 const getAllUsers = async (req, res) => {
     try {
         const usersAll = await Users.findAll({ attributes: ['name', 'email', 'role'] }) // Buscando todos os usuários
@@ -102,6 +130,7 @@ const deleteUsers = async (req, res) => {
 }
 
 export default {
+    login,
     getAllUsers,
     getUser,
     createUsers,
